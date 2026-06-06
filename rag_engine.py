@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain_chroma import Chroma
+from langchain_community.vectorstores import FAISS
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
@@ -21,13 +21,13 @@ class RAGEngine:
         # 1. Load
         loader = PyPDFLoader(pdf_path)
         docs = loader.load()
-        
-        # 2. Split (Crucial for context window limits)
+
+        # 2. Split
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         splits = text_splitter.split_documents(docs)
-        
-        # 3. Store
-        self.vector_store = Chroma.from_documents(documents=splits, embedding=self.embeddings)
+
+        # 3. Store (FAISS instead of Chroma)
+        self.vector_store = FAISS.from_documents(documents=splits, embedding=self.embeddings)
 
     def query(self, question):
         if not self.vector_store:
